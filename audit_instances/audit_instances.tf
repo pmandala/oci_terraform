@@ -26,8 +26,9 @@ locals {
     "AD",
     "FD",
     "Created On",
-    "OCID",
-    "Compartment OCID"
+    "ID",
+    "Compartment OCID",
+    "Compartment Name"
   ])
 
   all_comp_ids = data.oci_identity_compartments.all-compartments.compartments.*.id
@@ -37,6 +38,7 @@ module "audit" {
   count   = length(local.all_comp_ids)
   source  = "./instances"
   comp_id = local.all_comp_ids[count.index]
+  comp_name = local.comp_map[local.all_comp_ids[count.index]]
 }
 
 resource "local_file" "instances_csv" {

@@ -17,9 +17,10 @@ data "oci_core_vnic" "vnic" {
 
 
 locals {
-  # csv formatted headers
-  header_output_list = join(",", [
-    "Name",
+
+  # instances csv formatted output
+  /*
+   "Name",
     "State",
     "Public IP",
     "Private IP",
@@ -31,12 +32,10 @@ locals {
     "AD",
     "FD",
     "Created On",
-    "OCID",
-    "Compartment OCID"
-  ])
-
-
-  # instances csv formatted output
+    "ID",
+    "Compartment OCID",
+    "Compartment Name"
+  */
   instances_output_list = flatten([for obj in data.oci_core_instances.all_instances.instances :
     join(",", [
       obj.display_name,
@@ -52,7 +51,8 @@ locals {
       obj.fault_domain,
       obj.time_created,
       obj.id,
-      obj.compartment_id
+      obj.compartment_id,
+      var.comp_name
     ])
   ])
 
