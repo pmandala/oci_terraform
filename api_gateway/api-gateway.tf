@@ -2,7 +2,7 @@ locals {
   deployment_display_name = "myadbs"
   deployment_path_prefix  = var.deployment_path_prefix
   adb_dns_name            = var.adb_dns_name
-  gateway_display_name = format("vanity-gway-%s", formatdate("YYYYMMDDhhmmss", local.timestamp))
+  gateway_display_name    = format("%s-%s", var.gateway_display_name, formatdate("YYYYMMDDhhmmss", local.timestamp))
 }
 
 
@@ -233,5 +233,5 @@ output "vanity_gateway_public_ips" {
 }
 
 output "vanity_gateway_url" {
-  value = format("https://%s/", oci_apigateway_gateway.vanity_gateway.hostname)
+  value = format("https://%s/<app context path>/", oci_apigateway_gateway.vanity_gateway.hostname)
 }

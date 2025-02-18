@@ -32,3 +32,6 @@ variable "deployment_path_prefix" {
 
 variable "adb_dns_name" {
 }
+
+variable "gateway_display_name" {
+}

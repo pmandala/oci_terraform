@@ -1,8 +1,8 @@
 # Number of subnets
 locals {
   timestamp        = timestamp()
-  vcn_dns_label    = "vanityurl"
-  vcn_display_name = format("%s-%s", local.vcn_dns_label, formatdate("YYYYMMDDhhmmss", local.timestamp))
+  vcn_dns_label    = replace(var.gateway_display_name, "/[\\s\\-]/", "")
+  vcn_display_name = format("%s-vcn", local.vcn_dns_label)
   subnet_name      = "apigateway"
 }
 
