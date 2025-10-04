@@ -2,7 +2,7 @@ locals {
   deployment_display_name = "myadbs"
   deployment_path_prefix  = var.deployment_path_prefix
   adb_dns_name            = var.adb_dns_name
-  gateway_display_name    = format("%s-%s", var.gateway_display_name, formatdate("YYYYMMDDhhmmss", local.timestamp))
+  gateway_display_name    = format("%s-gateway", var.gateway_display_name)
 }
 
 
@@ -11,6 +11,7 @@ resource "oci_apigateway_gateway" "vanity_gateway" {
   endpoint_type  = "PUBLIC"
   subnet_id      = oci_core_subnet.sub_api_gateway.id
   display_name   = local.gateway_display_name
+  certificate_id = oci_apigateway_certificate.vanity_certificate.id
 }
 
 resource "oci_apigateway_deployment" "adbs_deployment" {
@@ -33,7 +34,7 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
     request_policies {
     }
 
-    routes {
+    /*routes {
       backend {
         type                       = "HTTP_BACKEND"
         connect_timeout_in_seconds = 60.0
@@ -60,9 +61,9 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
           }
         }
       }
-    }
+    }*/
 
-    routes {
+    /*routes {
       backend {
         type                       = "HTTP_BACKEND"
         connect_timeout_in_seconds = 60.0
@@ -89,7 +90,7 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
           }
         }
       }
-    }
+    }*/
 
     routes {
       backend {
@@ -120,7 +121,6 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
       }
     }
 
-
     routes {
       backend {
         type                       = "HTTP_BACKEND"
@@ -135,6 +135,30 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
     }
 
     routes {
+      backend {
+        type   = "STOCK_RESPONSE_BACKEND"
+        status = 302
+        headers {
+          name  = "Location"
+          value = "https://$${request.headers[host]}/ords/r/demo_user/askoracle102/home"
+        }
+      }
+      path    = "/{any*}"
+      methods = ["GET"]
+      response_policies {
+        header_transformations {
+          set_headers {
+            items {
+              name      = "Location"
+              values    = ["https://$${request.headers[host]}/ords/r/demo_user/askoracle102/home"]
+              if_exists = "OVERWRITE"
+            }
+          }
+        }
+      }
+    }
+
+    /*routes {
       backend {
         type                       = "HTTP_BACKEND"
         connect_timeout_in_seconds = 60.0
@@ -163,7 +187,7 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
       }
     }
 
-    routes {
+    /*routes {
       backend {
         type                       = "HTTP_BACKEND"
         connect_timeout_in_seconds = 60.0
@@ -190,9 +214,9 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
           }
         }
       }
-    }
+    } */
 
-    routes {
+    /*routes {
       backend {
         type                       = "HTTP_BACKEND"
         connect_timeout_in_seconds = 60.0
@@ -219,7 +243,7 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
           }
         }
       }
-    }
+    }*/
 
   }
 }
