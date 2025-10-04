@@ -92,6 +92,65 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
       }
     }*/
 
+    /*routes {
+      backend {
+        connect_timeout_in_seconds = 60.0
+        is_ssl_verify_disabled     = false
+        read_timeout_in_seconds    = 300.0
+        send_timeout_in_seconds    = 10.0
+        type                       = "DYNAMIC_ROUTING_BACKEND"
+
+        selection_source {
+          selector = "request.host"
+          type     = "SINGLE"
+        }
+
+        routing_backends {
+          backend {
+            type = "HTTP_BACKEND"
+            url  = "https://${local.adb_dns_name}/ords/$${request.path[resource]}"
+          }
+          key {
+            is_default = false
+            name       = "app1"
+            type       = "ANY_OF"
+            values     = ["app1.com"]
+          }
+        }
+
+        routing_backends {
+          backend {
+            type = "HTTP_BACKEND"
+            url  = "https://${local.adb_dns_name}/ords/$${request.path[resource]}"
+          }
+          key {
+            is_default = false
+            name       = "app2"
+            type       = "ANY_OF"
+            values     = ["app2.com"]
+          }
+        }
+      }
+      path    = "/ords/{resource*}"
+      methods = ["ANY"]
+      request_policies {
+        header_transformations {
+          set_headers {
+            items {
+              name      = "Host"
+              values    = ["$${request.headers[host]}"]
+              if_exists = "OVERWRITE"
+            }
+            items {
+              name      = "x-adbs-host"
+              values    = [local.adb_dns_name]
+              if_exists = "OVERWRITE"
+            }
+          }
+        }
+      }
+    }*/
+
     routes {
       backend {
         type                       = "HTTP_BACKEND"
