@@ -11,7 +11,7 @@ resource "oci_apigateway_gateway" "vanity_gateway" {
   endpoint_type  = "PUBLIC"
   subnet_id      = oci_core_subnet.sub_api_gateway.id
   display_name   = local.gateway_display_name
-  certificate_id = oci_apigateway_certificate.vanity_certificate.id
+  #certificate_id = oci_apigateway_certificate.vanity_certificate.id
 }
 
 resource "oci_apigateway_deployment" "adbs_deployment" {
@@ -37,10 +37,10 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
     /*routes {
       backend {
         type                       = "HTTP_BACKEND"
-        connect_timeout_in_seconds = 60.0
         is_ssl_verify_disabled     = false
-        read_timeout_in_seconds    = 300.0
-        send_timeout_in_seconds    = 10.0
+        connect_timeout_in_seconds = 60
+        read_timeout_in_seconds    = 300
+        send_timeout_in_seconds    = 10
         url                        = "https://${local.adb_dns_name}/oml/$${request.path[resource]}"
       }
       path    = "/oml/{resource*}"
@@ -66,10 +66,10 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
     /*routes {
       backend {
         type                       = "HTTP_BACKEND"
-        connect_timeout_in_seconds = 60.0
         is_ssl_verify_disabled     = false
-        read_timeout_in_seconds    = 300.0
-        send_timeout_in_seconds    = 10.0
+        connect_timeout_in_seconds = 60
+        read_timeout_in_seconds    = 300
+        send_timeout_in_seconds    = 10
         url                        = "https://${local.adb_dns_name}/omlusers/$${request.path[resource]}"
       }
       path    = "/omlusers/{resource*}"
@@ -92,12 +92,12 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
       }
     }*/
 
-    /*routes {
+    routes {
       backend {
-        connect_timeout_in_seconds = 60.0
         is_ssl_verify_disabled     = false
-        read_timeout_in_seconds    = 300.0
-        send_timeout_in_seconds    = 10.0
+        connect_timeout_in_seconds = 60
+        read_timeout_in_seconds    = 300
+        send_timeout_in_seconds    = 10
         type                       = "DYNAMIC_ROUTING_BACKEND"
 
         selection_source {
@@ -105,6 +105,7 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
           type     = "SINGLE"
         }
 
+        // curl -v -k https://iuexer2g3um5sqoogwayszfii4.apigateway.us-phoenix-1.oci.customer-oci.com/ords/r/demo_user/askoracle102/home -H "Host:askoracle-dev.adb.us-ashburn-1.oraclecloudapps"
         routing_backends {
           backend {
             type = "HTTP_BACKEND"
@@ -112,9 +113,23 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
           }
           key {
             is_default = false
-            name       = "app1"
+            name       = "dev"
             type       = "ANY_OF"
-            values     = ["app1.com"]
+            values     = ["askoracle-dev.adb.us-ashburn-1.oraclecloudapps"]
+          }
+        }
+
+        // curl -v -k https://iuexer2g3um5sqoogwayszfii4.apigateway.us-phoenix-1.oci.customer-oci.com/ords/r/demo_user/askoracle102/home -H "Host:askoracle.adb.us-ashburn-1.oraclecloudapps"
+        routing_backends {
+          backend {
+            type = "HTTP_BACKEND"
+            url  = "https://vq3hiipo7lgoglx-aiwatclonev1.adb.us-ashburn-1.oraclecloudapps.com/ords/$${request.path[resource]}"
+          }
+          key {
+            is_default = false
+            name       = "prod"
+            type       = "ANY_OF"
+            values     = ["aaskoracle.adb.us-ashburn-1.oraclecloudapps.com"]
           }
         }
 
@@ -124,12 +139,41 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
             url  = "https://${local.adb_dns_name}/ords/$${request.path[resource]}"
           }
           key {
-            is_default = false
-            name       = "app2"
+            is_default = true
+            name       = "default"
             type       = "ANY_OF"
-            values     = ["app2.com"]
+            values     = null
           }
         }
+      }
+      path    = "/ords/{resource*}"
+      methods = ["ANY"]
+      request_policies {
+        header_transformations {
+          set_headers {
+            items {
+              name      = "Host"
+              values    = ["$${request.headers[host]}"]
+              if_exists = "OVERWRITE"
+            }
+            items {
+              name      = "x-adbs-host"
+              values    = [local.adb_dns_name]
+              if_exists = "OVERWRITE"
+            }
+          }
+        }
+      }
+    }
+
+    /*routes {
+      backend {
+        type                       = "HTTP_BACKEND"
+        is_ssl_verify_disabled     = false
+        connect_timeout_in_seconds = 60
+        read_timeout_in_seconds    = 300
+        send_timeout_in_seconds    = 10
+        url                        = "https://${local.adb_dns_name}/ords/$${request.path[resource]}"
       }
       path    = "/ords/{resource*}"
       methods = ["ANY"]
@@ -154,46 +198,17 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
     routes {
       backend {
         type                       = "HTTP_BACKEND"
-        connect_timeout_in_seconds = 60.0
         is_ssl_verify_disabled     = false
-        read_timeout_in_seconds    = 300.0
-        send_timeout_in_seconds    = 10.0
-        url                        = "https://${local.adb_dns_name}/ords/$${request.path[resource]}"
-      }
-      path    = "/ords/{resource*}"
-      methods = ["ANY"]
-      request_policies {
-        header_transformations {
-          set_headers {
-            items {
-              name      = "Host"
-              values    = ["$${request.headers[host]}"]
-              if_exists = "OVERWRITE"
-            }
-            items {
-              name      = "x-adbs-host"
-              values    = [local.adb_dns_name]
-              if_exists = "OVERWRITE"
-            }
-          }
-        }
-      }
-    }
-
-    routes {
-      backend {
-        type                       = "HTTP_BACKEND"
-        connect_timeout_in_seconds = 60.0
-        is_ssl_verify_disabled     = false
-        read_timeout_in_seconds    = 300.0
-        send_timeout_in_seconds    = 10.0
+        connect_timeout_in_seconds = 60
+        read_timeout_in_seconds    = 300
+        send_timeout_in_seconds    = 10
         url                        = "https://${local.adb_dns_name}/i/$${request.path[resource]}"
       }
       path    = "/i/{resource*}"
       methods = ["ANY"]
     }
 
-    routes {
+    /*routes {
       backend {
         type   = "STOCK_RESPONSE_BACKEND"
         status = 302
@@ -215,15 +230,15 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
           }
         }
       }
-    }
+    }*/
 
     /*routes {
       backend {
         type                       = "HTTP_BACKEND"
-        connect_timeout_in_seconds = 60.0
         is_ssl_verify_disabled     = false
-        read_timeout_in_seconds    = 300.0
-        send_timeout_in_seconds    = 10.0
+        connect_timeout_in_seconds = 60
+        read_timeout_in_seconds    = 300
+        send_timeout_in_seconds    = 10
         url                        = "https://${local.adb_dns_name}/graphstudio/$${request.path[resource]}"
       }
       path    = "/graphstudio/{resource*}"
@@ -249,10 +264,10 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
     /*routes {
       backend {
         type                       = "HTTP_BACKEND"
-        connect_timeout_in_seconds = 60.0
         is_ssl_verify_disabled     = false
-        read_timeout_in_seconds    = 300.0
-        send_timeout_in_seconds    = 10.0
+        connect_timeout_in_seconds = 60
+        read_timeout_in_seconds    = 300
+        send_timeout_in_seconds    = 10
         url                        = "https://${local.adb_dns_name}/odi/$${request.path[resource]}"
       }
       path    = "/odi/{resource*}"
@@ -278,10 +293,10 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
     /*routes {
       backend {
         type                       = "HTTP_BACKEND"
-        connect_timeout_in_seconds = 60.0
         is_ssl_verify_disabled     = false
-        read_timeout_in_seconds    = 300.0
-        send_timeout_in_seconds    = 10.0
+        connect_timeout_in_seconds = 60
+        read_timeout_in_seconds    = 300
+        send_timeout_in_seconds    = 10
         url                        = "https://${local.adb_dns_name}/broker/$${request.path[resource]}"
       }
       path    = "/broker/{resource*}"
