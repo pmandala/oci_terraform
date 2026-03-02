@@ -98,12 +98,12 @@ resource "oci_core_route_table" "PrivateRouteTable2" {
     network_entity_id = oci_core_nat_gateway.MgmtNAT2.id
   }
 
-  route_rules {
+  /*route_rules {
     destination      = var.vcn_cidr
     destination_type = "CIDR_BLOCK"
     # Bridge Instance Secondary VNIC PrivateIP
     network_entity_id = lookup(data.oci_core_private_ips.BridgeInstancePrivateIP2.private_ips[0], "id")
-  }
+  }*/
 }
 
 resource "oci_core_subnet" "PrivateSubnet2" {

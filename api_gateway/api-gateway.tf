@@ -92,7 +92,7 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
       }
     }*/
 
-    routes {
+    /*routes {
       backend {
         is_ssl_verify_disabled     = false
         connect_timeout_in_seconds = 60
@@ -133,7 +133,7 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
           }
         }
 
-        routing_backends {
+        /*routing_backends {
           backend {
             type = "HTTP_BACKEND"
             url  = "https://${local.adb_dns_name}/ords/$${request.path[resource]}"
@@ -144,36 +144,7 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
             type       = "ANY_OF"
             values     = null
           }
-        }
-      }
-      path    = "/ords/{resource*}"
-      methods = ["ANY"]
-      request_policies {
-        header_transformations {
-          set_headers {
-            items {
-              name      = "Host"
-              values    = ["$${request.headers[host]}"]
-              if_exists = "OVERWRITE"
-            }
-            items {
-              name      = "x-adbs-host"
-              values    = [local.adb_dns_name]
-              if_exists = "OVERWRITE"
-            }
-          }
-        }
-      }
-    }
-
-    /*routes {
-      backend {
-        type                       = "HTTP_BACKEND"
-        is_ssl_verify_disabled     = false
-        connect_timeout_in_seconds = 60
-        read_timeout_in_seconds    = 300
-        send_timeout_in_seconds    = 10
-        url                        = "https://${local.adb_dns_name}/ords/$${request.path[resource]}"
+        }* /
       }
       path    = "/ords/{resource*}"
       methods = ["ANY"]
@@ -202,11 +173,40 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
         connect_timeout_in_seconds = 60
         read_timeout_in_seconds    = 300
         send_timeout_in_seconds    = 10
+        url                        = "https://${local.adb_dns_name}/$${request.path[resource]}"
+      }
+      path    = "/{resource*}"
+      methods = ["ANY"]
+      request_policies {
+        header_transformations {
+          set_headers {
+            items {
+              name      = "Host"
+              values    = ["$${request.headers[host]}"]
+              if_exists = "OVERWRITE"
+            }
+            items {
+              name      = "x-adbs-host"
+              values    = [local.adb_dns_name]
+              if_exists = "OVERWRITE"
+            }
+          }
+        }
+      }
+    }
+
+    /*routes {
+      backend {
+        type                       = "HTTP_BACKEND"
+        is_ssl_verify_disabled     = false
+        connect_timeout_in_seconds = 60
+        read_timeout_in_seconds    = 300
+        send_timeout_in_seconds    = 10
         url                        = "https://${local.adb_dns_name}/i/$${request.path[resource]}"
       }
       path    = "/i/{resource*}"
       methods = ["ANY"]
-    }
+    }*/
 
     /*routes {
       backend {
@@ -322,7 +322,11 @@ resource "oci_apigateway_deployment" "adbs_deployment" {
   }
 }
 
-output "vanity_gateway_hostname" {
+output "adbs_proxy_dns" {
+  value = local.adb_dns_name
+}
+
+output "vanity_gateway_dns" {
   value = oci_apigateway_gateway.vanity_gateway.hostname
 }
 

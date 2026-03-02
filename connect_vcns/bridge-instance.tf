@@ -1,5 +1,5 @@
 
-resource "oci_core_instance" "BridgeInstance" {
+/*resource "oci_core_instance" "BridgeInstance" {
   availability_domain = lookup(data.oci_identity_availability_domains.ADs.availability_domains[var.AD - 1], "name")
   compartment_id      = var.compartment_ocid
   display_name        = "BridgeInstance"
@@ -55,6 +55,7 @@ data "oci_core_vnic_attachments" "BridgeInstanceVnicAttachmentPrimary" {
 }
 
 data "oci_core_vnic_attachments" "BridgeInstanceVnicAttachmentSecondary" {
+  depends_on = [ oci_core_vnic_attachment.sec_pvt_vnic ]
   compartment_id      = var.compartment_ocid
   availability_domain = lookup(data.oci_identity_availability_domains.ADs.availability_domains[var.AD - 1], "name")
   instance_id         = data.oci_core_instance.bridge_instance.id
@@ -106,6 +107,16 @@ resource "null_resource" "configure-secondary-vnic" {
       "sudo chmod 777 /tmp/secondary_vnic_all_configure.sh",
       "sudo /tmp/secondary_vnic_all_configure.sh -c ${lookup(data.oci_core_private_ips.BridgeInstancePrivateIP2.private_ips[0], "id")}",
       "sudo ip route add ${var.vcn_cidr2} via ${oci_core_subnet.MgmtSubnet2.virtual_router_ip} dev ens5",
+      "sudo ip route show",
     ]
   }
 }
+*/
+
+/*
+
+"sudo ip route add ${var.vcn_cidr2} via ${oci_core_subnet.MgmtSubnet2.virtual_router_ip} dev ens5",
+echo "${var.vcn_cidr2} via ${oci_core_subnet.MgmtSubnet2.virtual_router_ip}" > sudo /etc/sysconfig/network-scripts/route-ens5
+sudo systemctl restart network
+
+*/

@@ -1,4 +1,4 @@
-/*resource "oci_core_instance_configuration" "bridge_instance_configuration" {
+resource "oci_core_instance_configuration" "bridge_instance_configuration" {
   compartment_id = var.compartment_ocid
   display_name   = "BridgeInstance"
 
@@ -61,7 +61,7 @@ resource "oci_core_instance_pool" "bridge_instance_pool" {
     }
   }
 
-  size = 1
+  size = 0
 }
 
 # Get Bridge instances object from instance pool
@@ -74,6 +74,8 @@ data "oci_core_instance_pool_instances" "bridge_instance_pool_instances" {
 
 
 ###### BRIDGE INSTANCE #########
+
+/*
 
 # get first instance
 data "oci_core_instance" "bridge_instance" {
