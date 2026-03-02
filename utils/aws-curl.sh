@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#
 #
 # Usage:
 # aws-curl <host> <method> [file-to-send-as-body] <request-uri> [extra-curl-args]

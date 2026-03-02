@@ -1,25 +1,5 @@
 #!/bin/bash
 #
-# $Header: pdbcs/no_ship_src/service/scripts/oci-curl.sh
-#
-# oci-curl.sh
-#
-# Copyright (c) 2017, 2021, Oracle and/or its affiliates. 
-#
-#    NAME
-#      oci-curl,sh
-#
-#    DESCRIPTION
-#      Curl utiltiy for oci rest based api calls
-#
-#    NOTES
-#
-#    MODIFIED   (MM/DD/YY)
-#    pmandala    02/08/21 - Creation
-#
-
-
-# Version: 1.0.2
 # Usage:
 # oci-curl <host> <method> [file-to-send-as-body] <request-target> [extra-curl-args]
 #

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#
 #
 # Usage:
 # az-curl <host> <method> <request-uri> [extra-curl-args]
