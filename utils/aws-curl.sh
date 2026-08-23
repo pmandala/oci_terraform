@@ -60,7 +60,7 @@ function sign() {
   SIGNING_HMAC=$(hex_of_sha256_hmac_with_hex_key_and_value "${SERVICE_HMAC}" "aws4_request")
   SIGNATURE=$(hex_of_sha256_hmac_with_hex_key_and_value "${SIGNING_HMAC}" "${STRING_TO_SIGN}")
 
-  printf "%s" "${SIGNATURE}"
+  printf "${SIGNATURE}"
 }
 
 function create_canonical_request() {
@@ -75,7 +75,7 @@ function create_canonical_request() {
   CANONICAL_REQUEST_CONTENT="${HTTP_REQUEST_METHOD}\n${CANONICAL_URI}\n${CANONICAL_QUERY_STRING}\n${CANONICAL_HEADERS}\n\n${SIGNED_HEADERS}\n${REQUEST_PAYLOAD_HASH_HEX}"
   CANONICAL_REQUEST="$(sha256_hash_in_hex "${CANONICAL_REQUEST_CONTENT}")"
 
-  printf "%s" "$CANONICAL_REQUEST"
+  printf "$CANONICAL_REQUEST"
 }
 
 function sign_canonical_request() {
@@ -86,12 +86,12 @@ function sign_canonical_request() {
   REQUEST_SERVICE="$5"
   shift 5
 
-  REQUEST_DATE=$(printf "%s" "${REQUEST_TIME}" | cut -c 1-8)
+  REQUEST_DATE=$(printf "${REQUEST_TIME}" | cut -c 1-8)
   ALGORITHM=AWS4-HMAC-SHA256
   CREDENTIAL_SCOPE="${REQUEST_DATE}/${REQUEST_REGION}/${REQUEST_SERVICE}/aws4_request"
   STRING_TO_SIGN="${ALGORITHM}\n${REQUEST_TIME}\n${CREDENTIAL_SCOPE}\n${CANONICAL_REQUEST}"
 
-  printf "%s" "$(sign "$STRING_TO_SIGN" "$SECRET_ACCESS_KEY" "$REQUEST_DATE" "$REGION" "$REQUEST_SERVICE")"
+  printf "$(sign "$STRING_TO_SIGN" "$SECRET_ACCESS_KEY" "$REQUEST_DATE" "$REGION" "$REQUEST_SERVICE")"
 }
 
 # Authorization: AWS4-HMAC-SHA256 Credential=AKIDEXAMPLE/20110909/us-east-1/iam/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=ced6826de92d2bdeed8f846f0bf508e8559e98e4b0199114b84c54174deb456c
@@ -109,7 +109,7 @@ function create_authorization_header() {
   # keyid/date/region/service/term
   CREDENTIAL_SCOPE="$ACCESS_KEY_ID/${REQUEST_DATE}/${REQUEST_REGION}/${REQUEST_SERVICE}/aws4_request"
 
-  printf "%s" "$ALGORITHM \
+  printf "$ALGORITHM \
 Credential=$CREDENTIAL_SCOPE, \
 SignedHeaders=$SIGNED_HEADERS, \
 Signature=$SIGNATURE"
@@ -168,10 +168,12 @@ function aws-curl () {
         if [[ "$3" == *'?'* ]]; then
           CANONICAL_URI="$(echo "$3" | cut -d '?' -f 1)"
           CANONICAL_QUERY_STRING="$(echo "$3" | cut -d '?' -f 2)"
+          API_URL="https://$HOST$CANONICAL_URI?$CANONICAL_QUERY_STRING"
         else 
           CANONICAL_URI="$3"
+          API_URL="https://$HOST$CANONICAL_URI"
         fi
-        API_URL="https://$HOST$CANONICAL_URI?$CANONICAL_QUERY_STRING"
+        
         EXTRA_ARGS=("${@: 4}")
         CONTENT_TYPE="application/x-www-form-urlencoded"
         REQUEST_PAYLOAD_HASH_HEX=$(sha256_hash_in_hex "${REQUEST_PAYLOAD}")
@@ -189,6 +191,17 @@ function aws-curl () {
         CONTENT_LENGTH="$(wc -c < $REQUEST_PAYLOAD | xargs)";
         REQUEST_PAYLOAD_HASH_HEX="$(openssl dgst -binary -sha256 < $REQUEST_PAYLOAD | od -An -vtx1 | sed 's/[ \n]//g' | sed 'N;s/\n//')"
         CUSTOM_HEADER_STR=" -H x-amz-content-sha256:$REQUEST_PAYLOAD_HASH_HEX -H content-length:$CONTENT_LENGTH "
+      ;;
+
+      "DELETE")
+        CANONICAL_URI="$3"
+        API_URL="https://$HOST$CANONICAL_URI"
+        EXTRA_ARGS=("${@: 4}")
+        CONTENT_TYPE="application/x-www-form-urlencoded"
+        CONTENT_LENGTH=0;
+        REQUEST_PAYLOAD_HASH_HEX=$(sha256_hash_in_hex "${REQUEST_PAYLOAD}")
+        CUSTOM_HEADER_STR=" -H x-amz-content-sha256:$REQUEST_PAYLOAD_HASH_HEX "
+        FORMATTER=" | xmllint --format - "
       ;;
       
       *) 
@@ -213,7 +226,7 @@ function aws-curl () {
   local CANONICAL_REQUEST=$(create_canonical_request "$HTTP_REQUEST_METHOD" "$CANONICAL_URI" "$CANONICAL_QUERY_STRING" "$CANONICAL_HEADERS" "$SIGNED_HEADERS" "$REQUEST_PAYLOAD_HASH_HEX")
   local SIGNATURE=$(sign_canonical_request "$CANONICAL_REQUEST" "$SECRET_ACCESS_KEY" "$REQUEST_TIME" "$REQUEST_REGION" "$REQUEST_SERVICE")
   local AUTHORIZATION_HEADER=$(create_authorization_header "$ACCESS_KEY_ID" "$SIGNATURE" "$REQUEST_TIME" "$REQUEST_REGION" "$REQUEST_SERVICE" "$SIGNED_HEADERS")
-
+  
   # set -x 
   curl -sS "${EXTRA_ARGS[@]}" "${BODY_ARG[@]}" \
       -X "$HTTP_REQUEST_METHOD" $CUSTOM_HEADER_STR \

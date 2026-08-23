@@ -44,3 +44,5 @@ json/
 .tmp/
 allproviders.tf
 **/*.csv
+
+imports.tf

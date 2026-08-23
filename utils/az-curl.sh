@@ -26,6 +26,16 @@ do
   fi
 done
 
+getHTTPStatus() {
+    FULL_STATUS_LINE=$(cat resp_headers.txt | head -n 1)
+    # echo "Full Status Line: $FULL_STATUS_LINE"
+
+    # Extracting the status code and message using cut/awk
+    STATUS_CODE=$(echo "$FULL_STATUS_LINE" | cut -d' ' -f2)
+    STATUS_MESSAGE=$(echo "$FULL_STATUS_LINE" | cut -d' ' -f3-)
+    
+    return $STATUS_CODE
+}
 
 function az-curl () {
     local APP_ID="${AZ_APP_ID}"
@@ -51,6 +61,10 @@ function az-curl () {
         ;;
 
         "PUT")
+            CUSTOM_HEADER_STR=" -H content-length:0 "
+        ;;
+
+        "DELETE")
             CUSTOM_HEADER_STR=" -H content-length:0 "
         ;;
         
@@ -86,16 +100,3 @@ function az-curl () {
             -H "x-ms-date: $REQUEST_TIME" \
             "https://$HOST$CANONICAL_URI" 
 }
-
-
-
-# FULL_STATUS_LINE=$(cat resp_headers.txt | head -n 1)
-
-# echo "Full Status Line: $FULL_STATUS_LINE"
-
-# # Extracting the status code and message using cut/awk
-# STATUS_CODE=$(echo "$FULL_STATUS_LINE" | cut -d' ' -f2)
-# STATUS_MESSAGE=$(echo "$FULL_STATUS_LINE" | cut -d' ' -f3-)
-
-# echo "Status Code: $STATUS_CODE"
-# echo "Status Message: $STATUS_MESSAGE"
