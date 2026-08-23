@@ -8,9 +8,9 @@ resource "oci_network_firewall_network_firewall_policy" "firewall_policy_deny" {
 # OCI Network Firewall
 resource "oci_network_firewall_network_firewall" "network_firewall" {
   compartment_id             = var.compartment_ocid
-  network_firewall_policy_id = oci_network_firewall_network_firewall_policy.firewall_policy_2.id
+  network_firewall_policy_id = oci_network_firewall_network_firewall_policy.firewall_policy_1.id
   subnet_id                  = oci_core_subnet.firewall_subnet.id
-  display_name               = "firewall-1"
+  display_name               = "firewall-2"
 
   nat_configuration {
     must_enable_private_nat = true

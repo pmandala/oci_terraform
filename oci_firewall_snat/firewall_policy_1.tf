@@ -8,28 +8,28 @@ resource "oci_network_firewall_network_firewall_policy" "firewall_policy_1" {
 # Address Lists
 
 resource "oci_network_firewall_network_firewall_policy_address_list" "firewall_policy_1_address_list_1" {
-  name                       = "firewall_vcn"
+  name                       = "firewall_subnet_cidr"
   network_firewall_policy_id = oci_network_firewall_network_firewall_policy.firewall_policy_1.id
   type                       = "IP"
   addresses                  = ["10.0.3.230/32"]
 }
 
 resource "oci_network_firewall_network_firewall_policy_address_list" "firewall_policy_1_address_list_2" {
-  name                       = "adbs_vcn"
+  name                       = "hub_subnet_cidr"
   network_firewall_policy_id = oci_network_firewall_network_firewall_policy.firewall_policy_1.id
   type                       = "IP"
-  addresses                  = ["192.168.1.69/32"]
+  addresses                  = ["192.168.1.0/24"]
 }
 
 resource "oci_network_firewall_network_firewall_policy_address_list" "firewall_policy_1_address_list_3" {
-  name                       = "ODB_IP"
+  name                       = "AZ_whitelist"
   network_firewall_policy_id = oci_network_firewall_network_firewall_policy.firewall_policy_1.id
   type                       = "IP"
-  addresses                  = ["10.62.0.10"]
+  addresses                  = ["10.62.1.20"]
 }
 
 resource "oci_network_firewall_network_firewall_policy_address_list" "firewall_policy_1_address_list_4" {
-  name                       = "ADBS_CIDR"
+  name                       = "adbs_vcn_cidr"
   network_firewall_policy_id = oci_network_firewall_network_firewall_policy.firewall_policy_1.id
   type                       = "IP"
   addresses                  = ["10.0.0.0/16"]
@@ -89,7 +89,20 @@ resource "oci_network_firewall_network_firewall_policy_nat_rule" "firewall_polic
     service             = null
     source_address      = [oci_network_firewall_network_firewall_policy_address_list.firewall_policy_1_address_list_1.name]
   }
-  name                       = "snat_adbs"
+  name                       = "firewall_vcn_hub_snat"
   network_firewall_policy_id = oci_network_firewall_network_firewall_policy.firewall_policy_1.id
   type                       = "NATV4"
 }
+
+/*resource "oci_network_firewall_network_firewall_policy_nat_rule" "firewall_policy_1_nat_rule_2" {
+  action = "DIPP_SRC_NAT"
+  condition {
+    destination_address = [oci_network_firewall_network_firewall_policy_address_list.firewall_policy_1_address_list_3.name]
+    service             = null
+    source_address      = [oci_network_firewall_network_firewall_policy_address_list.firewall_policy_1_address_list_4.name]
+  }
+  name                       = "firewall_vcn_odb_snat"
+  network_firewall_policy_id = oci_network_firewall_network_firewall_policy.firewall_policy_1.id
+  type                       = "NATV4"
+}
+*/
