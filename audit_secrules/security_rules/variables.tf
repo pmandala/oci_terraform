@@ -2,6 +2,10 @@ variable "comp_id" {
   description = "Compartment OCID"
 }
 
+variable "comp_name" {
+  description = "Compartment Name"
+}
+
 variable "decode_protocol" {
   default = {
     "6"   = "TCP"

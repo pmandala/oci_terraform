@@ -1,33 +1,6 @@
 
-data "oci_core_vcns" "all_vcns" {
-  compartment_id = var.comp_id
-}
-
-data "oci_core_security_lists" "security_lists" {
-  compartment_id = var.comp_id
-}
-
-data "oci_core_network_security_groups" "nsgs" {
-  compartment_id = var.comp_id
-}
-
-data "oci_core_network_security_group_security_rules" "nsg_security_rules" {
-  for_each                  = toset(data.oci_core_network_security_groups.nsgs.network_security_groups.*.id)
-  network_security_group_id = each.key
-}
 
 locals {
-
-  # vcn ocid => name
-  vcnid_name_map = merge({ for obj in data.oci_core_vcns.all_vcns.virtual_networks :
-    obj.id => obj.display_name
-  })
-
-  # nsg ocid => name
-  nsgid_name_map = merge({ for obj in data.oci_core_network_security_groups.nsgs.network_security_groups :
-    obj.id => obj.display_name
-  })
-
 
   # process the security rules
   security_rules_merged_list = flatten([for obj in data.oci_core_security_lists.security_lists.security_lists :
@@ -39,7 +12,8 @@ locals {
           "display_name"       = obj.display_name,
           "vcn_id"             = obj.vcn_id,
           "seclist_id"         = obj.id,
-          "vcn_display_name"   = lookup(local.vcnid_name_map, obj.vcn_id),
+          "time_created"       = obj.time_created,
+          "vcn_display_name"   = lookup(local.vcnid_name_map, obj.vcn_id, "<MISSING>"),
           "stateless"          = egress_rules.stateless ? "Yes" : "No",
           "icmp_options"       = join(",", [for opt in egress_rules.icmp_options : format("type=%s, code=%s", opt.type, opt.code)]),
           "tcp_options"        = join(",", [for opt in egress_rules.tcp_options : (opt.min != opt.max ? format("%s-%s", opt.min, opt.max) : opt.min)]),
@@ -55,7 +29,8 @@ locals {
           "display_name"       = obj.display_name,
           "vcn_id"             = obj.vcn_id,
           "seclist_id"         = obj.id,
-          "vcn_display_name"   = lookup(local.vcnid_name_map, obj.vcn_id),
+          "time_created"       = obj.time_created,
+          "vcn_display_name"   = lookup(local.vcnid_name_map, obj.vcn_id, "<MISSING>"),
           "stateless"          = ingress_rules.stateless ? "Yes" : "No",
           "icmp_options"       = join(",", [for opt in ingress_rules.icmp_options : format("type=%s, code=%s", opt.type, opt.code)]),
           "tcp_options"        = join(",", [for opt in ingress_rules.tcp_options : (opt.min != opt.max ? format("%s-%s", opt.min, opt.max) : opt.min)]),
@@ -72,7 +47,9 @@ locals {
 
   # security list csv formatted output
   security_rules_output_list = flatten([for obj in local.security_rules_merged_list :
-    join(",", ["Security List",
+    join(",", [
+      var.comp_name,
+      "SL",
       obj.vcn_display_name,
       obj.display_name,
       obj.direction,
@@ -84,6 +61,7 @@ locals {
       obj.tcp_options != "" ? obj.tcp_options : (obj.udp_options != "" ? obj.udp_options : (obj.protocol != "ICMP" ? "All" : "")),
       "\"${obj.icmp_options != "" ? obj.icmp_options : (obj.protocol == "ICMP" ? "All" : "")}\"",
       "\"${obj.description}\"",
+      obj.time_created,
       obj.seclist_id
     ])
   ])
@@ -97,7 +75,8 @@ locals {
         "nsg_id"             = obj.id,
         "nsg_display_name"   = obj.display_name
         "vcn_id"             = obj.vcn_id,
-        "vcn_display_name"   = lookup(local.vcnid_name_map, obj.vcn_id),
+        "time_created"       = obj.time_created,
+        "vcn_display_name"   = lookup(local.vcnid_name_map, obj.vcn_id, "<MISSING>"),
         "stateless"          = rules.stateless ? "Yes" : "No",
         "source"             = rules.source_type == "NETWORK_SECURITY_GROUP" ? lookup(local.nsgid_name_map, rules.source) : rules.source,
         "destination"        = rules.destination_type == "NETWORK_SECURITY_GROUP" ? lookup(local.nsgid_name_map, rules.destination) : rules.destination,
@@ -114,7 +93,9 @@ locals {
 
   # nsg csv formatted output
   nsg_output_list = flatten([for obj in local.nsg_merged_list :
-    join(",", ["NSG",
+    join(",", [
+      var.comp_name,
+      "NSG",
       obj.vcn_display_name,
       obj.nsg_display_name,
       obj.direction,
@@ -126,6 +107,7 @@ locals {
       obj.tcp_options_dest != "" ? obj.tcp_options_dest : (obj.udp_options_dest != "" ? obj.udp_options_dest : (obj.protocol != "ICMP" ? "All" : "")),
       "\"${obj.icmp_options != "" ? obj.icmp_options : (obj.protocol == "ICMP" ? "All" : "")}\"",
       "\"${obj.description}\"",
+      obj.time_created,
       obj.nsg_id
     ])
   ])

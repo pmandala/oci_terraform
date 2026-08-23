@@ -37,3 +37,12 @@ terraform.rc
 **/.terraform.lock.hcl
 **/.terraform
 **/terraform.tfvars
+
+.DS_Store
+csv/
+json/
+.tmp/
+allproviders.tf
+**/*.csv
+
+imports.tf
