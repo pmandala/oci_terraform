@@ -3,11 +3,16 @@ resource "oci_core_instance" "public_instance" {
   availability_domain = lookup(data.oci_identity_availability_domains.ADs.availability_domains[0], "name")
   compartment_id      = var.compartment_ocid
   display_name        = "instance-firewall"
-  shape               = "VM.Standard.E5.Flex"
+  shape               = var.shape
 
   create_vnic_details {
     subnet_id        = oci_core_subnet.public_subnet.id
     assign_public_ip = true
+  }
+
+  shape_config {
+    ocpus         = local.shape_cfgs[var.shape]["ocpus"]
+    memory_in_gbs = local.shape_cfgs[var.shape]["memory_in_gbs"]
   }
 
   source_details {
@@ -108,11 +113,16 @@ resource "oci_core_instance" "private_instance" {
   availability_domain = lookup(data.oci_identity_availability_domains.ADs.availability_domains[0], "name")
   compartment_id      = var.compartment_ocid
   display_name        = "instance-firewall-pvt"
-  shape               = "VM.Standard.E5.Flex"
+  shape               = var.shape
 
   create_vnic_details {
     subnet_id        = oci_core_subnet.private_subnet.id
     assign_public_ip = false
+  }
+
+  shape_config {
+    ocpus         = local.shape_cfgs[var.shape]["ocpus"]
+    memory_in_gbs = local.shape_cfgs[var.shape]["memory_in_gbs"]
   }
 
   source_details {

@@ -150,11 +150,6 @@ resource "oci_core_local_peering_gateway" "lpg_firewall_vcn" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_virtual_network.firewall_vcn.id
   display_name   = "lpg_firewall_vcn"
-  # peer_id        = oci_core_local_peering_gateway.lpg_adb_vcn.id
-
-  lifecycle {
-    ignore_changes = [peer_id]
-  }
 }
 
 # SUBNETS

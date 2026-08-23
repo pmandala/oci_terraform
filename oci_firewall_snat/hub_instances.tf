@@ -1,12 +1,18 @@
-resource "oci_core_instance" "instance-adbwork" {
-  availability_domain = lookup(data.oci_identity_availability_domains.ADs.availability_domains[0], "name")
+
+resource "oci_core_instance" "hub_instance" {
+  availability_domain = data.oci_core_shapes.shape.availability_domain
   compartment_id      = var.compartment_ocid
-  display_name        = "instance-adb-work"
-  shape               = "VM.Standard.E5.Flex"
+  display_name        = "hub-instance"
+  shape               = var.shape
 
   create_vnic_details {
-    subnet_id        = oci_core_subnet.workload_subnet.id
+    subnet_id        = oci_core_subnet.hub_subnet.id
     assign_public_ip = true
+  }
+
+  shape_config {
+    ocpus         = local.shape_cfgs[var.shape]["ocpus"]
+    memory_in_gbs = local.shape_cfgs[var.shape]["memory_in_gbs"]
   }
 
   source_details {
@@ -102,3 +108,4 @@ resource "oci_core_instance" "instance-adbwork" {
     create = "10m"
   }
 }
+

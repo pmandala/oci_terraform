@@ -14,3 +14,22 @@ data "oci_core_images" "selected_image" {
 data "oci_identity_availability_domains" "ADs" {
   compartment_id = var.tenancy_ocid
 }
+
+data "oci_core_shapes" "shape" {
+  compartment_id      = var.compartment_ocid
+  availability_domain = lookup(data.oci_identity_availability_domains.ADs.availability_domains[0], "name")
+
+  filter {
+    name   = "name"
+    values = [var.shape]
+  }
+}
+
+locals {
+  shape_cfgs = {
+    for s in data.oci_core_shapes.shape.shapes : s.name => {
+      "memory_in_gbs" = s.memory_in_gbs
+      "ocpus"         = s.ocpus
+    }
+  }
+}
