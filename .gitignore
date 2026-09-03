@@ -46,3 +46,4 @@ allproviders.tf
 **/*.csv
 
 imports.tf
+resp_headers.*
